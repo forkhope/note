@@ -1,0 +1,135 @@
+" 去掉有关vi一致性模式,避免一些bug和局限
+set nocompatible
+" 开启语法高亮 和 设置背景主题
+syntax on
+color ron
+" 光标移动到buffer的顶部和底部是保持3行距离
+set scrolloff=3
+" 1=启动显示状态行, 2=总是显示状态行
+set laststatus=2
+" 状态行显示的内容
+set statusline=%F%m%r%h%w\ [TYPE=%Y]\ [POS=%l,%v][%p%%]\ %{strftime(\"%d/%m/%y\ -\ %H:%M\")}\ [HEX=%B]
+" 自动缩进
+set autoindent
+" 设置C风格的自动缩进
+set cindent
+" 如果设置了softtabstop=4,它会将4个空格合并为一个TAB,不要使用该设置
+" set softtabstop=4
+" 自动缩进时,缩进长度为4
+set shiftwidth=4
+" 设置 Tab 键的宽度
+set tabstop=4
+" 使用空格代替制表符
+set expandtab
+" 显示行号
+set number
+" 高亮显示匹配的括号
+set showmatch
+" 搜索逐字符高亮
+set hlsearch
+" 光标立刻跳转到搜索到内容
+set incsearch
+" 去掉输入错误时的提示声音
+set noeb
+" 检测文件类型
+filetype on
+" 载入文件类型插件
+filetype plugin on
+" 为特定文件类型载入相关缩进文件
+filetype indent on
+" 打开文件类型检测,加了这句才能智能补全
+set completeopt=longest,menu
+" 设置全鼠标模式,后面的插件需要用到鼠标的,都需要该选项
+set mouse=a
+" 设置文件编码,主要是避免中文乱码
+set fileencodings=utf-8,cp936,big5,latin1
+
+" 配置ctags 和 taglist
+" 使用F3来打开或关闭taglist, nnoremap表示只在普通模式(按下ESC后)下使用
+set tags=tags
+nnoremap <silent> <F3> :TlistToggle<CR> 
+" Close tag folds for inactive buffers
+let Tlist_File_Fold_Auto_Close=1
+" Close vim if the taglist is the only window
+let Tlist_Exit_OnlyWindow=1
+" Single click on a tag jumps to it.
+let Tlist_Use_Single_Click=1
+
+" 配置 cscope
+" 'cscopequickfix' specifies whether to use quickfix window to show cscope
+" results. 实际使用发现,默认情况,cscope查找到的结果是一个select列表,输入数
+" 字选择后,就会跳转到对应位置,然后输入 :cw 命令没有quickfix窗口出来;如果使
+" 用了下面的选项,则查找后不会有select列表,而是显示查找到的总数并跳转到第一
+" 个查找的位置,然后输入 :cw 命令会分割出quickfix窗口,列出所有的查找结果.
+set cscopequickfix=s-,g-,d-,c-,t-,e-,f-,i-
+set cscopetagorder=1
+" 切换到quickfix的上一个查找结果
+noremap <F7> :cp<CR>
+" 切换到quichfix的下一个查找结果
+noremap <F8> :cn<CR>
+" 显示查找结果列表
+noremap <F9> :cw<CR>
+" <C-_>g的按法是先按 "Ctrl+Shift+-",然后都松开,接着马上再按"g",一定要快.
+noremap <C-_>s :cs find s <C-R>=expand("<cword>")<CR><CR>
+noremap <C-_>g :cs find g <C-R>=expand("<cword>")<CR><CR>
+noremap <C-_>c :cs find c <C-R>=expand("<cword>")<CR><CR>
+noremap <C-_>t :cs find t <C-R>=expand("<cword>")<CR><CR>
+noremap <C-_>e :cs find e <C-R>=expand("<cword>")<CR><CR>
+noremap <C-_>f :cs find f <C-R>=expand("<cfile>")<CR><CR>
+noremap <C-_>i :cs find i <C-R>=expand("<cfile>")<CR><CR>
+noremap <C-_>d :cs find d <C-R>=expand("<cword>")<CR><CR>
+if has("cscope")
+    set csprg=/usr/local/bin/cscope
+    set cst
+    set nocsverb
+    " add any database in current directory
+    if filereadable("cscope.out")
+        cs add cscope.out
+    " else add database pointed to by environment
+    elseif $CSCOPE_DB != ""
+        cs add $CSCOPE_DB
+    endif
+    set csverb
+endif
+
+" 设定目录浏览插件 NERDtree, 按下F4呼出.虽然下面在 :NERDTreeToggle 的前
+" 面加了 <ESC>,但是这并不能自动退出编辑模式,可视模式倒是可以.
+noremap <F4> <ESC>:NERDTreeToggle<CR>
+" 设置 NERDTree 窗口的位置在右边
+let NERDTreeWinPos="right"
+" 设置为单击展开目录,双击打开文件
+let NERDTreeMouseMode=2
+
+" 设定Lookupfile,该插件默认已经配置为按下 F5 呼出
+" 设定启动查找的最少字符数
+let g:LookupFile_MinPatLength = 3
+" 不保存上次查找的字符串
+let g:LookupFile_PreserveLastPattern = 0
+" 保存查找历史
+let g:LookupFile_PreservePatternHistory = 1
+" 回车打开第一个匹配项目
+let g:LookupFile_AlwaysAcceptFirst = 1
+" 不允许创建不存在的文件
+let g:LookupFile_AllowNewFiles = 0
+if filereadable("filenametags")
+    let g:LookupFile_TagExpr = string('./filenametags')
+endif
+
+" 设置 echofunc.vim 的快捷键,这个用于在多个函数原型间选择
+let g:EchoFuncKeyNext='<Esc>+'
+let g:EchoFuncKeyPrev='<Esc>-'
+
+" 设置 Grep.vim 的快捷键
+let Grep_Skip_Dirs = 'out .git api docs test tests cts sip .repo'
+let Grep_Default_Filelist = '*.java *.cpp *.xml *.c'
+let Grep_Skip_Files = '*.html *.txt *.o *.ko'
+nnoremap <silent><F6> :Rgrep<CR>
+
+" 配置切换vim缓冲区的快捷键,bn表示切换后一页,bp表示切换前一页
+nnoremap - :bp<CR>
+nnoremap + :bn<CR>
+
+" minibuf插件的配置
+let g:miniBufExplMapCTabSwitchBufs = 1
+let g:miniBufExplMapWindowNavVim = 1
+let g:miniBufExplMapWindowNavArrows = 1

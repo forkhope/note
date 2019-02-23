@@ -1,0 +1,32 @@
+记录 repo 的使用笔记
+1."repo forall"的 "-p" 选项
+当使用"repo forall -c git status"命令来查看各个仓库的git差异时,打印出来的
+内容没有包含仓库的名字,有时候根本看不出来某些改动是在哪个仓库.实际上,使用
+"repo help forall"命令查看"forall"子命令的帮助信息,可以看到有一个"-p"选项.
+其说明为:-p             Show project headers before output
+也就是说,加了"-p"选项后,就能在repo forall打印出来的结果中添加上仓库名.
+根据帮助信息里面的例子,建议先写"-p",再写"-c",即"repo forall -p -c".
+
+!!!!NOTE!!!!
+使用"-p"选项可能会过滤掉一些错误.实际使用中遇到这样一个例子,描述如下:
+$ ls       # 下面的brandy目录是后来新增的,原先的repo没有跟踪这个仓库
+brandy     linux-3.4    buildroot   tools
+$ repo forall -c git pull  # 执行该命令,会看到报错信息,提示有个仓库没有指定
+fatal: No remote repository specified.  Please, specify either a URL or a
+remote name from which new revisions should be fetched.
+Already up-to-date.
+Already up-to-date.
+Already up-to-date.
+$ repo forall -p -c git pull    # 加了"-p"选项后,没有看到上面的报错信息,应
+project buildroot/              # 应该是被过滤掉了.可见,使用"-p"选项可能会
+Already up-to-date.             # 漏掉某些报错信息.但不加"-p"又打印不出具体
+project linux-3.4/              # 的仓库名字.所以要根据实际情况来选择是否使
+Already up-to-date.             # 用"-p"选项.
+project tools/
+Already up-to-date.
+
+2."repo status"的 "-j" 选项
+使用"repo help status"命令查看 "-j" 选项的说明,描述如下:
+  -j JOBS, --jobs=JOBS  number of projects to check simultaneously
+The -j/--jobs option can be used to run multiple status queries in parallel.
+所以,可以使用该选项来加快"repo status"命令的执行速度,如"repo status -j4".

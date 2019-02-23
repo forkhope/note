@@ -1,0 +1,50 @@
+A23 sdk2.0的代码是在CS仓库,添加2G代码后,这部分代码需要上传到SW仓库.
+具体操作步骤如下:
+1.在android根目录下执行
+repo remote add sw-exdroid ssh://server@192.168.1.95/home/sw/sw_git/A23
+命令.其中,sw-exdroid是后面路径的别名,可以起任意名字,没有关系,后面的路径通
+过git remote -v来获取,例如在SW仓库的代码中执行git remote -v,会输出
+exdroid	ssh://server@192.168.1.95/home/sw/sw_git/A23/platform/frameworks/base.git (push)
+如果是android的代码,去掉A20/后面的内容就可以.如果是lichee代码,那路径需要加上lichee,也就是
+repo remote add sw-lichee ssh://server@192.168.1.95/home/sw/sw_git/A23/lichee
+
+2. 添加完SW仓库的路径后,执行
+repo forall -c git push sw-lichee a23-x7s-2.0:a23-x7s-2.0
+命令将代码上传到SW仓库. 这个时候可能会报错.例如A20 sdk2.0新增linux-3.4目
+录,但是SW 的A20仓库中没有该目录,会提示路径不存在,这个没有关系,下面的步骤
+会解决这个问题.
+
+另外,远程分支路径不要写为 lichee/a23-x7s-2.0,否则服务器上新创建的分支名
+将会是lichee/a23-x7s-2.0. 使用 git branch -a命令可以看到这一点:
+srv:~/lichee/linux-3.4$ git branch -a
+* a23-2g-762d
+  remotes/lichee/a23-2g-762d
+  remotes/lichee/lichee/a23-x7s-2.0
+也就是说,远程分支名只写为a23-x7s-2.0就可以.
+
+3. 当代码上传完后,如果新增目录导致的报错,就到192.168.1.95服务器上,找到SW
+仓库所在的路径(git remote -v命令列出的就是完整路径),新增一个目录例如缺少
+linux-3.4目录,则在SW仓库lichee源码所在的目录新建一个 linux-3.4.git 目录,
+然后进入这个linux-3.4.git目录,执行git  --bare init,服务器端建立了一个空
+的git项目. 这样,我们再执行
+repo forall -c git push sw-exdroid local_branch:remote_branch
+命令就能把新增的linux-3.4目录上传到服务器.
+
+4.在服务器新增一个目录后,我们要修改repo的文件,让repo知道新增了一个目录,才
+能用repo来管理这个目录.例如SW仓库A20的repo文件位于/home/sw/sw_git/manifest/
+目录下面,修改里面的manifest.xml文件,把新增的目录添加进去,然后执行git add,
+git commit 步骤保存更新就可以.
+
+5.由于repo sync时,会下载一个默认的master分支,但是我们新增的目录里面此时没有
+master分支,repo sync的时候会出错,为了解决这个问题,需要再push一次代码到
+master分支上.例如新增了linux-3.4目录,则我们需要执行
+git push sw-lichee develop:new_branch_name
+命令,然后再执行 git push sw-lichee develop:lichee-a20
+命令上传代码到master分支, git branch -r命令会列出master分支对应的分支名
+srv:~/9-cs-a20-4.2/lichee/linux-3.4$ git branch -r
+  m/master -> lichee/lichee-a20
+
+======== 20140218 更新
+如果想在git目录下添加远程服务器路径,需要执行如下的命令:
+$git remote add exdroid ssh://server@192.168.1.95/home/sw/sw_git/A23/device/softwinner/polaris-ococci.git
+也就是,需要指定完整的路径,这个路径就是git remote -v输出的路径.

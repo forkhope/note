@@ -1,0 +1,122 @@
+记录 Git 的使用笔记
+1.本地删除文件后,让服务器也删除这个文件: git add -u
+使用 man git-add 查看它的帮助手册,里面对 -u 选项的说明如下:
+-u, --update
+    Only match <filepattern> against already tracked files in the index
+    rather than the working tree. That means that it will never stage
+    new files, but that it will stage modified new contents of tracked
+    files and that it will remove files from the index if the
+    corresponding files in the working tree have been removed.
+
+    If no <filepattern> is given, default to "."; in other words, update
+    all tracked files in the current directory and its subdirectories.
+
+2.查看上库的文件名,但不打印具体的改动: git log --name-status
+--name-status
+    Show only names and status of changed files.
+
+3.使用git库的版本覆盖本地修改: git checkout 和 git reset
+git checkout -- <filename>: 可以恢复还没有执行 git add 的文件
+git reset HEAD <filename>: 对于已经执行git add的文件,使用这个命令取消add,
+                           然后再使用上一条命令恢复
+git reset --hard HEAD: 把全部更改的文件都恢复.
+--hard
+    Resets the index and working tree. Any changes to tracked files in the
+    working tree since <commit> are discarded. 上面的HEAD就是一个<commit>
+
+实际使用发现,git checkout 和 git reset 有如下的区别:
+(1)直接用 git checkout 将代码回退到之前的提交时,当前的 git 分支会发生改变,
+得到一个未命名分支,提示用"git checkout -b new_branch_name"生成新分支.例如:
+$ git branch
+* (no branch)
+  master
+虽然,当前目录已经被回退为之前的提交,但是这个改动不是发生在原来的分支上,而是
+要切换出新的分支.当执行 git checkout branch_name 命令切回原来分支时,原来分
+支的代码没有回退.            如果想直接回退当前分支的代码,不能采用这种做法.
+(2)使用 git reset 将代码log回退到之前的提交时,当前的 git 分支不会发生改变,
+不会得到一个未命名分支,当前目录下的代码不会被回退.此时使用 git status 命令
+查看 git 仓库状态,一般会提示部分文件有所改动,即当前代码和git暂存区中的代码
+不符.暂存区中的代码是 git reset 所回退到的log记录的代码,当前代码是最新改动
+的代码.如果想将当前代码回退,可以再使用 git checkout 命令来覆盖当前的改动.
+即,如果想在当前分支上,将本地代码回退,就可以使用这种方法.它不会生成新的分支.
+
+4.查看某个人的上库信息: git log --author=<pattern>, --committer=<pattern>
+--author=<pattern>, --committer=<pattern>
+    Limit the commits output to ones with author/committer header lines
+    that match the specified pattern (regular expression).
+    也就是说,这个pattern可以是正则表达式,可以指定人名,也可以指定邮箱.
+例如,使用git log --author=john查看john的上库信息.如果有多个john,也可以使用
+git log --author=john@example.com来查看这个邮箱的上库信息.
+该选项可以使用正则表达式,如果想匹配任意 "@example.com" 这个邮箱上库的log,可
+以使用命令: git log --author=".example"或者git log --author=".example.com".
+
+5.查找上库注释: git log --grep=<pattern>
+--grep=<pattern>
+    Limit the commits output to ones with log message that matches the
+    specified pattern (regular expression).
+使用这个命令可以根据上库注释过滤git log.
+
+6.解决git status显示中文文件名乱码问题
+john:~$git status
+# 位于分支 master
+# 尚未暂存以备提交的变更：
+#   （使用 "git add <file>..." 更新要提交的内容）
+#   （使用 "git checkout -- <file>..." 丢弃工作区的改动）
+#
+#   修改：      "5-\224\257\346\216\247\345\210\266\346\265\201.txt"
+可以看到,使用 git status 查看改动时,显示的中文文件名乱码
+解决方案是: git config --global core.quotepath false
+
+7.强制覆盖服务器的git log信息
+-f, --force
+    Usually, the command refuses to update a remote ref that is not an
+    ancestor of the local ref used to overwrite it. This flag disables
+    the check. This can cause the remote repository to lose commits;
+    use it with care.
+当我们回退本地git log,重新提交后,使用git push会报错,打印类似的错误信息:
+    ---- 提示:更新被拒绝,因为您当前分支的最新提交落后于其对应的远程分支.
+此时,如果想强制用本地git log覆盖服务器的git log,可以使用 git push -f 命令.
+
+8.只查看前 N 条log信息
+-<n>
+    Limits the number of commits to show. Note that this is a commit
+    limiting option.
+使用 git log HEAD 命令并不会只输出第一条log,而是会输出所有log. 如果想查看
+只查看第一条log,可以使用 git log -1 命令(注意,是数字1,而不是字母l).如果想
+查看前面三条log,则使用 git log -3 命令.注意,这个命令不是打印第三条log的意
+思,而是打印前面三条log.
+
+9.删除远程服务器分支
+有两种可以用于删除远程服务器上的分支:
+(1)git push origin :<branchName>: 推送一个空分支到远程分支,从而删除远程分支
+(2)git push origin --delete <branchName>: 本质上和第一种方法是一样的.
+man git-push可以看到,里面对 --delete 选项的描述为:
+    All listed refs are deleted from the remote repository. This is the
+    same as prefixing all refs with a colon.
+
+10.同时添加修改的文件和删除的文件到暂存区
+如果对当前目录下的文件进行修改,可以使用 git add . 命令来添加这些文件到暂存
+区,但是这个命令不能添加被删除的文件.要添加被删除的文件,需要使用git add -u .
+命令.也就说,如果当前目录下有的文件被修改,有的文件被删除时,要添加它们到暂存
+区,需要分别执行两个 "git add ." 和 "git add -u ." 命令.其实,还有一个更简单
+的方法,那就是使用 git add 命令的 -A 选项:
+-A, --all
+    Like -u, but match <filepattern> against files in the working tree
+    in addition to the index. That means that it will find new files as
+    well as staging modified content and removing files that are no
+    longer in the working tree.
+即使用 -A或--all 选项,就能同时添加修改过的文件和删除的文件到暂存区.
+
+11.设置命令别名
+打开.gitconfig文件，添加如下设置项：
+[alias]
+    co = checkout
+    ci = commit
+    st = status
+    pl = pull
+    ps = push
+    dt = difftool
+    l = log --stat
+    cp = cherry-pick
+    ca = commit -a
+    b = branch

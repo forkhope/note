@@ -1,0 +1,15 @@
+1.adb截图
+adb自带一个screencap命令,可以获取当前屏幕截图,并保存成图片.其帮助信息如下:
+usage: screencap [-hp] [-d display-id] [FILENAME]
+   -h: this message
+   -p: save the file as a png.
+   -d: specify the display id to capture, default 0.
+If FILENAME ends with .png it will be saved as a png.
+If FILENAME is not given, the results will be printed to stdout.
+如果不指定 -p 选项,文件名也不是 .png 结尾时,所保存的文件不是png格式.
+$adb shell screencap /sdcard/shot.png      # 截图,并保存为shot.png文件
+$adb pull /sdcard/shot.png   # 将保存在机器里面的图片,拷贝到本地
+
+2.adb logcat根据LOG_TAG过滤log
+adb logcat -s LOG_TAG1 LOG_TAG2 ... LOG_TAG3
+这个"-s"选项后面可以跟多个LOG_TAG,会一次性全都打印出来.

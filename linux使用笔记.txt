@@ -1,0 +1,38 @@
+1. 安装完整的 man 手册
+sudo apt-get install manpages 
+sudo apt-get install manpages-de 
+sudo apt-get install manpages-de-dev 
+sudo apt-get install manpages-dev
+sudo apt-get install manpages-posix manpages-posix-dev
+
+2. man 手册去掉中文
+sudo apt-get purge manpages-zh
+之后在使用man手册时，会看到英文的man，但是退出man手册后，
+会出现“无法解析 。。。。。”的错误，如下：
+man: 无法解析 /usr/share/man/zh_CN/man1/man.1.gz: 没有那个文件或目录
+man: 无法解析 /usr/share/man/zh_CN/man7/man.7.gz: 没有那个文件或目录
+
+解决方法是：
+用sudo mandb -c 命令，重建了man索引数据库，于是乎问题解决了。
+具体可参阅mandb手册，重建数据库需要点时间
+
+3. 将man手册导出成txt,pdf,html格式
+* 导出成txt
+最简单的方法是重定向. 例如 man ls > ls.txt
+上面的写法可能会有一些格式的问题,可以下面的命令来导出txt格式:
+man –t bash |col –b > bash_man.txt
+这个是大家经常使用的，导出成txt文件，格式基本正确
+
+* 导出成pdf
+man –t bash |ps2pdf – bash_man.pdf
+这个是最近学习到的，可以导出成PDF格式，方便查看。
+
+* 导出成html
+man -t --html=/usr/bin/firefox bash
+cp /tmp/hmanLSa2jh/bash.html /home/talen/Documents
+或者在使用firefox另存页面
+这个默认是使用elinks在终端下打开man页面，也可以自己指定浏览器，可以指定firefox作为打开的浏览器
+
+4. Shell 脚本中如何回显正在执行的命令
+$ set -v          # 会使得后面执行的命令自动回显。
+$ set +v         # 会关闭命令回显功能。
