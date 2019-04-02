@@ -120,3 +120,10 @@ man git-push可以看到,里面对 --delete 选项的描述为:
     cp = cherry-pick
     ca = commit -a
     b = branch
+
+12.执行git pull命令会拉取服务器所有branch、tag的信息，如果想只拉取当前branch的
+信息，要再加上远程仓库名和branch名作为参数。例如，将远程origin仓库的xx分支合并到
+本地当前分支，可以执行这个命令: git pull origin xx
+如果还要不拉tag信息，可以再加上 --no-tags 选项
+对repo来说，可以执行 repo forall -c git pull --no-tags origin xx 命令从远程
+对origin仓库拉取xx分支，且不会拉取远程其他branch、tag的信息
