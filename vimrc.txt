@@ -40,7 +40,11 @@ filetype indent on
 " 打开文件类型检测,加了这句才能智能补全
 set completeopt=longest,menu
 " 设置全鼠标模式,后面的插件需要用到鼠标的,都需要该选项
-set mouse=a
+" 注意: 全鼠标模式会导致无法使用鼠标右键复制粘贴,不做这个设置
+" 但是如果不设置鼠标模式,会无法使用鼠标滚轮来滚动界面,
+" 经过验证,发现可以设成普通模式mouse=n来使用鼠标滚轮,也能使用
+" 鼠标右键复制粘贴. mouse=c/mouse=i模式都不能用鼠标滚轮.
+set mouse=n
 " 设置文件编码,主要是避免中文乱码
 set fileencodings=utf-8,cp936,big5,latin1
 
