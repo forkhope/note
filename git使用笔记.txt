@@ -127,3 +127,14 @@ man git-push可以看到,里面对 --delete 选项的描述为:
 如果还要不拉tag信息，可以再加上 --no-tags 选项
 对repo来说，可以执行 repo forall -c git pull --no-tags origin xx 命令从远程
 对origin仓库拉取xx分支，且不会拉取远程其他branch、tag的信息
+
+13.当修改文件时、特别是在Windows下修改Linux的文件，可能会改变文件的mode属性值，
+例如从644变成755，然后使用git add命令添加文件，会提示file mode change，但是
+这个提示不太明显，容易被忽略，如果只是想看文件mode是否发生改变，可以使用git diff
+命令的--summary选项。man git-diff手册对这个选项的说明如下：
+  Output a condensed summary of extended header information such as
+  creations, renames and mode changes.
+例如，如果本地文件的mode改变了，执行git diff --summary命令，会看到类似
+ mode change 100755 => 100644 file_name
+这样的信息，不会列出文件内容的改动，方便查看到mode本身的变化。
+
