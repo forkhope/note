@@ -58,15 +58,25 @@ git log --author=john@example.com来查看这个邮箱的上库信息.
 使用这个命令可以根据上库注释过滤git log.
 
 ===== 解决git status显示中文文件名乱码问题
+使用 git status 查看有改动但未提交的中文文件名时，发现会显示为一串数字，没有显示中文的文件名。具体如下所示：
+```git
 $ git status
 # 位于分支 master
 # 尚未暂存以备提交的变更:
 #   （使用 "git add <file>..." 更新要提交的内容）
 #   （使用 "git checkout -- <file>..." 丢弃工作区的改动）
 #
-#   修改:      "5-\224\257\346\216\247\345\210\266\346\265\201.txt"
-可以看到,使用 git status 查看改动时,显示的中文文件名乱码
-解决方案是: git config --global core.quotepath false
+#   修改:      "\224\257\346\216\247\345\210\266\346\265\201.txt"
+```
+解决方案是设置git的 *core.quotepath* 选项为false：
+`git config --global core.quotepath false`
+
+查看git在线帮助手册 (<https://git-scm.com/docs/git-config>), 里面对 *core.quotepath* 选项说明如下：
+> **core.quotePath**
+Commands that output paths (e.g. ls-files, diff), will quote "unusual" characters in the pathname by enclosing the pathname in double-quotes and escaping those characters with backslashes in the same way C escapes control characters (e.g. \t for TAB, \n for LF, \\ for backslash) or bytes with values larger than 0x80 (e.g. octal \302\265 for "micro" in UTF-8). If this variable is set to false, bytes higher than 0x80 are not considered "unusual" any more. Double-quotes, backslash and control characters are always escaped regardless of the setting of this variable. A simple space character is not considered "unusual". Many commands can output pathnames completely verbatim using the -z option. The default value is true.
+
+即，*core.quotepath* 选项为true时，会对中文字符进行转义再显示，看起来就像是乱码。设置该选项为false，就会正常显示中文。
+在一些终端上还要检查的本地语言设置，看终端自身是否可以正常显示中文。
 
 ===== 强制覆盖服务器的git log信息
 -f, --force
