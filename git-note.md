@@ -40,7 +40,7 @@ Changes not staged for commit:
 ```
 此时，需要使用 *git add* 命令来添加改动。  
 一般常用 `git add .` 命令来添加本地改动到staged区域，但是针对用shell自身rm命令删除文件的情况来说，`git add .` 命令不会添加已删除文件到staged区域，执行时会打印如下警告信息：
-```git
+```bash
 $ git --version
 git version 1.9.1
 $ git add .
@@ -67,7 +67,7 @@ Run 'git status' to check the paths you removed from your working tree.
 
 ## git add -u
 如果觉得要输入大写的A比较麻烦，也可以使用 `-u` 选项，该选项同样会添加已删除文件的改动：
-```git
+```bash
 $ git add -u
 $ git status
 On branch master
@@ -133,7 +133,7 @@ Git是一个分布式版本控制系统，它会保存文件修改的历史版�
 
 ## git checkout \<commit\>
 `git checkout <commit>` 命令把整个git仓库文件回退到 commit 参数指定的版本，该参数值可以是具体的commit hash值，也可以通过HEAD index来指定。例如，`HEAD^` 对应最新版本的上一个版本，那么 `git checkout HEAD^` 命令回退git仓库下的文件内容到上一个版本，同时从当前分支脱离，处在一个未命名分支下面：
-```git
+```bash
 $ git checkout HEAD^
 Note: checking out 'HEAD^'.
 
@@ -166,7 +166,7 @@ $ git branch
 
 ## git reset \<commit\>
 `git reset <commit>` 命令把git的HEAD指针指向到 commit 对应的版本，本地文件内容不会被回退，会停留在原先分支下。此时，用 git log 命令查看log信息，最新的log已经变成commit对应的信息。用 git status 命令查看，一般会提示有些文件被改动，即本地文件内容和git的staged区域内容不一致，类似于本地文件在当前git仓库的版本上进行了一些修改：
-```git
+```bash
 $ git reset HEAD^
 Unstaged changes after reset:
 M       hello.c
@@ -215,7 +215,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
 
 ## 在git log中显示committer信息
 `git log` 命令默认显示的里面只有author，没有committer，类似于下面的信息：
-```git
+```bash
 $ git log
 commit b932a847f564c441d68fe954b19b2b275fd1e38d
 Author: John <john@xxxx.com>
@@ -224,7 +224,7 @@ Date:   Mon Oct 21 16:18:09 2019 +0800
     hello release
 ```
 如果要显示committer的信息，可以使用 `--pretty=full` 选项。例如下面显示的信息：
-```git
+```bash
 $ git log --pretty=full
 commit b932a847f564c441d68fe954b19b2b275fd1e38d
 Author: John <john@xxxx.com>
@@ -261,7 +261,7 @@ Commit: John <john@xxxx.com>
 这里的 author 和 committer 的区别是，author 是进行这个修改的人，而 committer 是把这个修改提交到git仓库的人。  
 一般来说，我们自己修改代码，然后执行 git commit，那么既是 author，又是 committer。  
 如果别人用 git format-patch 生成 git patch，在patch文件里面会包含修改者的名称和邮箱信息。例如：
-```git
+```bash
 From 033abaaecd9a3133cfcc028726aa37ebdbe6bff4 Mon Sep 17 00:00:00 2001
 From: Jobs <jobs@xxxx.com>
 Date: Mon, 21 Oct 2019 16:18:09 +0800
@@ -291,7 +291,7 @@ Subject: [PATCH] hello release
 
 # 解决git status显示中文文件名乱码问题
 使用 git status 查看有改动但未提交的中文文件名时，发现会显示为一串数字，没有显示中文的文件名。具体如下所示：
-```git
+```bash
 $ git status
 # 位于分支 master
 # 尚未暂存以备提交的变更:
@@ -300,7 +300,7 @@ $ git status
 #
 #   修改:      "\224\257\346\216\247\345\210\266\346\265\201.txt"
 ```
-解决方案是设置git的 *core.quotepath* 选项为false：
+解决方案是设置git的 *core.quotepath* 选项为false：  
 `git config --global core.quotepath false`
 
 查看git在线帮助手册 (<https://git-scm.com/docs/git-config>)，里面对 *core.quotepath* 选项说明如下：
@@ -378,7 +378,7 @@ $ git pull --no-tags origin master
 
 # 执行 git pull 时是否打印改动的文件信息
 在公司的Android代码目录里面，使用 `git pull` 命令，发现不会打印发生改变的文件信息。例如不会打印类似下面的信息：
-```git
+```bash
 Fast-forward
  res/values-zh-rCN/strings.xml                                         | 5 +++--
  res/values/strings.xml                                                | 4 ++--
@@ -445,12 +445,12 @@ Fast-forward
 
 # git pull 命令的选项顺序问题
 实际使用 git pull 的时候，遇到这样一个问题，当把 --stat 写在 --no-tags 后面执行会报错：
-```git
+```bash
 $ git pull --no-tags --stat aosp remote_branch_name
 error: unknown option `stat'
 ```
 但是把 --stat 和 --no-tags 的顺序调换，执行 git pull 命令不会报错：
-```git
+```bash
 $ git pull --stat --no-tags aosp remote_branch_name
 From platform/packages/apps/Settings
  * branch            remote_branch_name -> FETCH_HEAD
@@ -466,7 +466,7 @@ Current branch remote_branch_name is up to date.
 # 打印且只打印本地分支名
 使用 git branch 查看分支，会打印仓库下的所有分支名，通过 '*' 星号来标识当前分支。  
 如果想打印且打印当前本地分支名，可以用 `git symbolic-ref --short HEAD` 命令。
-```git
+```bash
 $ git branch
 * curent_branch_xxx
   enable_func
@@ -474,7 +474,7 @@ $ git symbolic-ref --short HEAD
 curent_branch_xxx
 ```
 也可以使用 `git rev-parse --abbrev-ref HEAD` 命令来打印且只打印当前分支名。
-```git
+```bash
 $ git rev-parse --abbrev-ref HEAD
 curent_branch_xxx
 ```
@@ -511,10 +511,10 @@ $ ls .git/refs/heads
 great  master
 ```
 可以看到，git branch 的分支名跟 `.git/refs/heads/` 目录下的文件名相同：
-```git
-    $ git branch
-      great
-    * master
+```bash
+$ git branch
+  great
+* master
 ```
 结合这几个说明，对 `git symbolic-ref --short HEAD` 命令分解说明如下：
 - `git symbolic-ref` 命令可以解析获取 git ref 的信息
@@ -535,49 +535,49 @@ great  master
 我们在上面看到，`git rev-parse --abbrev-ref HEAD` 打印当前分支名，--abbrev-ref 表示输出所给对象不会混淆的短名，类似于 git symbolic-ref 的 --short 选项的输出结果。
 
 不加 --abbrev-ref 时，会打印出HEAD对应的hash值：
-```git
+```bash
 $ git rev-parse HEAD
 8ebf0117f9545187d3368adc1ce629608214984a
 ```
 
 这两个命令都可以打印当前分支名，如果当前处于未命名分支下面时，它们的行为会有一些差异。下面用 git branch 命令查看，可以看到当前处在分离的HEAD状态下，当前分支没有命名：
-```git
+```bash
 $ git branch
 * (detached from 65c6917)
   great
   master
 ```
 在这种情况下，HEAD不是符号引用，git symbolic-ref 会以错误退出：
-```git
+```bash
 $ git symbolic-ref --short HEAD
 fatal: ref HEAD is not a symbolic ref
 ```
 而 git rev-parse –abbrev-ref 将HEAD解析为自身：
-```git
+```bash
 $ git rev-parse --abbrev-ref HEAD
 HEAD
 ```
 
 # 获取当前本地分支对应的远端服务器分支
 可以使用下面命令查看本地分支在远端服务器的分支名：
-```git
+```bash
 $ git rev-parse --abbrev-ref local_branch_name@{upstream}
 ```
 把 local_branch_name 换成要查询的本地分支名，例如 master 等。下面通过例子来说明这个命令各个参数的含义。
 
 先创建一个新的本地分支，名为 *new_local_branch*，关连到远端服务器的 *Remote_Branch_U* 分支：
-```git
+```bash
 $ git checkout -b new_local_branch aosp/Remote_Branch_U
 Branch new_local_branch set up to track remote branch Remote_Branch_U from aosp.
 Switched to a new branch 'new_local_branch'
 ```
 查看本地分支 new_local_branch 在远端服务器的分支名：
-```git
+```bash
 $ git rev-parse --abbrev-ref new_local_branch@{upstream}
 aosp/Remote_Branch_U
 ```
 如果所给的本地分支名没有关连到远端服务器分支，会打印报错信息：
-```git
+```bash
 $ git rev-parse --abbrev-ref great@{upstream}
 fatal: No upstream configured for branch 'great'
 ```
@@ -588,7 +588,7 @@ fatal: No upstream configured for branch 'great'
 
 即，`@{upstream}` 可以缩写为 `@{u}`。如果不提供分支名，默认用当前本地分支名。  
 另外，如果不加 --abbrev-ref 选项，会打印分支head的hash值，而不是打印分支名。
-```git
+```bash
 $ git rev-parse --abbrev-ref new_local_branch@{u}
 aosp/Remote_Branch_U
 $ git rev-parse --abbrev-ref @{u}
