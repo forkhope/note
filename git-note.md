@@ -196,7 +196,11 @@ no changes added to commit (use "git add" and/or "git commit -a")
 > **-p, -u, --patch**  
     Generate patch (see section on generating patches).
 
-即，以patch的形式来显示改动内容，会显示修改前、修改后的对比。
+即，`git log -p` 命令默认以patch的形式来显示改动内容，会显示修改前、修改后的对比。
+
+在 `git log -p` 后面还可以提供 commit hash 值来从指定的 commit 开始查看，但不是只查看这个 commit 的改动。例如，git log -p 595bd27 命令是从 595bd27 这个 commit 开始显示代码修改，继续往下翻页，可以看到后面的 commit 改动。
+
+如果只想查看指定 commit 的改动，可以使用 `git show` 命令。例如，git show 595bd27 只显示出 595bd27 这个 commit 自身的改动，翻看到最后就结束打印，不会继续往下显示后面 commit 的改动。
 
 ## 查看提交记录改动的文件名
 使用 `git log --name-status` 命令来查看提交记录改动的文件名，但不会打印具体的改动，方便查看改动了哪些文件。
@@ -288,6 +292,21 @@ Subject: [PATCH] hello release
 
 这里说的commit信息指的是在执行 git commit 命令时填写的信息，不包含文件改动的内容。  
 例如，为了方便标识提交的修改对应哪个模块，要求在commit信息里面写上模块名，假设应用UI代码的模块名是APPLICATION_UI，就可以使用 `git log --grep=APPLICATION_UI` 来过滤出所有 APPLICATION_UI 模块的提交历史。
+
+# 使用 git commit --amend 修改历史 commit 信息
+在一些受管控的项目上，提交代码到 git 服务器后，还需要经过审核确认才正式合入版本，一般常用 gerrit 来进行审核确认操作。
+
+如果提交的代码审核不通过，需要再次修改提交。由于是修改同一个问题，我们可能不希望生成多个 commit 信息，会显得改动分散，看起来改动不完善，所以想要在本地已有的 commit 信息上再次提交改动，而不是在已有的 commit 上再新增一个 commit。
+
+使用 `git commit --amend` 命令可以达到在现有最新 commit 上再次提交改动的效果。
+
+在本地提交改动后，我们再次修改代码，执行 git add 命令添加改动，如果执行 `git commit -m` 命令，默认会创建新的空 commit 信息，填写相应的修改说明，提交之后，会新增一个 commit 信息；而执行 `git commit --amend` 命令会弹出当前最新 commit 的信息，我们可以修改这个信息，也可以不修改，提交之后，用 git log 命令查看，会看到没有增加新的 commit，原先 commit 的 hash 值也没有变，这一次的修改是跟之前的修改一起提交的。
+
+查看 man git-commit 对 --amend 选项的关键说明如下：
+> **--amend**  
+Replace the tip of the current branch by creating a new commit.
+
+即，`--amend` 选项创建一个新的 commit 来替换当前最新的 commit，如同当前最新的 commit 信息被修改了一样。
 
 # 解决git status显示中文文件名乱码问题
 使用 git status 查看有改动但未提交的中文文件名时，发现会显示为一串数字，没有显示中文的文件名。具体如下所示：
