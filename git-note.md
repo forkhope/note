@@ -62,8 +62,8 @@ Run 'git status' to check the paths you removed from your working tree.
 
 参考上面执行 `git add .` 命令时打印的警告信息，可以使用 `git add --all` 选项来添加已删除文件的改动，`--all` 也可以写为 `-A`，这两者是等效的。在Git 1.9.1版本上，查看 man git-add 对 -A 选项的说明如下：
 > **-A --all --no-ignore-removal**  
-    Update the index not only where the working tree has a file matching \<pathspec\> but also where the index already has an entry. This adds, modifies, and removes index entries to match the working tree.  
-    If no \<pathspec\> is given, the current version of Git defaults to "."; in other words, update all files in the current directory and its subdirectories. This default will change in a future version of Git, hence the form without \<pathspec\> should not be used.
+Update the index not only where the working tree has a file matching \<pathspec\> but also where the index already has an entry. This adds, modifies, and removes index entries to match the working tree.  
+If no \<pathspec\> is given, the current version of Git defaults to "."; in other words, update all files in the current directory and its subdirectories. This default will change in a future version of Git, hence the form without \<pathspec\> should not be used.
 
 ## git add -u
 如果觉得要输入大写的A比较麻烦，也可以使用 `-u` 选项，该选项同样会添加已删除文件的改动：
@@ -78,8 +78,8 @@ Changes to be committed:
 ```
 查看Git 1.9.1版本 man git-add 对 -u 选项的说明如下：
 > **-u --update**  
-    Update the index just where it already has an entry matching \<pathspec\>. This removes as well as modifies index entries to match the working tree, but adds no new files.  
-    If no \<pathspec\> is given, the current version of Git defaults to "."; in other words, update all tracked files in the current directory and its subdirectories. This default will change in a future version of Git, hence the form without \<pathspec\> should not be used.
+Update the index just where it already has an entry matching \<pathspec\>. This removes as well as modifies index entries to match the working tree, but adds no new files.  
+If no \<pathspec\> is given, the current version of Git defaults to "."; in other words, update all tracked files in the current directory and its subdirectories. This default will change in a future version of Git, hence the form without \<pathspec\> should not be used.
 
 `git add -A` 和 `git add -u` 都可以添加已删除文件的改动，它们的区别在于，-A 选项会添加新增的文件，而 -u 选项不会添加新增的文件。
 
@@ -88,8 +88,8 @@ Changes to be committed:
 ## 最后说一个突然发现自己记录的知识已经过时的小故事
 我在几年前使用git的时候，记录 man git-add 里面对 -u 选项的说明如下：
 > **-u, --update**  
-    Only match \<filepattern\> against already tracked files in the index rather than the working tree. That means that it will never stage new files, but that it will stage modified new contents of tracked files and that it will remove files from the index if the corresponding files in the working tree have been removed.  
-    If no \<filepattern\> is given, default to "."; in other words, update all tracked files in the current directory and its subdirectories.
+Only match \<filepattern\> against already tracked files in the index rather than the working tree. That means that it will never stage new files, but that it will stage modified new contents of tracked files and that it will remove files from the index if the corresponding files in the working tree have been removed.  
+If no \<filepattern\> is given, default to "."; in other words, update all tracked files in the current directory and its subdirectories.
 
 这个说明跟上面Git 1.9.1版本 man git-add 里面的说明有所差异，跟当前最新的Git 2.23版本 man git-add 里面的说明更是差异巨大 (这里没有贴出Git 2.23版本的说明)。  
 同时 `git add .` 在不同版本上的行为还不一样，顿时有种日新月异、地覆天翻之感。  
@@ -194,7 +194,7 @@ no changes added to commit (use "git add" and/or "git commit -a")
 ## 查看提交记录具体的改动
 执行 `git log` 命令会打印提交信息，默认不会列出具体的改动内容。可以使用 `git log -p` 命令来显示具体的改动内容。查看 man git-add 对 -p 选项说明如下：
 > **-p, -u, --patch**  
-    Generate patch (see section on generating patches).
+Generate patch (see section on generating patches).
 
 即，`git log -p` 命令默认以patch的形式来显示改动内容，会显示修改前、修改后的对比。
 
@@ -206,13 +206,13 @@ no changes added to commit (use "git add" and/or "git commit -a")
 使用 `git log --name-status` 命令来查看提交记录改动的文件名，但不会打印具体的改动，方便查看改动了哪些文件。
 查看 man git-log 对 --name-status 的说明如下：
 > **--name-status**  
-    Show only names and status of changed files.
+Show only names and status of changed files.
 
 ## 只查看前面几条提交信息
 使用 `git log` 命令查看使用提交记录，会显示全部的提交信息。如果只想查看前面几条提交信息，可以执行
  `git log -<number>` 命令，number 参数值是数字，指定要查看多少条信息，例如 1、2、3 等。查看 man git-log 对 `-<number>` 选项说明如下：
 > **-\<number\>, -n \<number\>, --max-count=\<number\>**  
-    Limit the number of commits to output.
+Limit the number of commits to output.
 
 例如，`git log -3` 命令会只列出前面三条提交信息。注意，这个命令并不是只列出第三个提交信息。  
 可以把 `-<number>` 选项和其他选项结合使用。例如 `git log -p -3` 命令只查看前面三条提交信息的具体改动。
@@ -238,7 +238,7 @@ Commit: John <john@xxxx.com>
 ```
 查看 man git-log 对 --pretty 选项说明如下：
 > **--pretty[=\<format\>], --format=\<format\>**  
-    Pretty-print the contents of the commit logs in a given format, where \<format\> can be one of oneline, short, medium, full, fuller, email, raw and format:\<string\>.
+Pretty-print the contents of the commit logs in a given format, where \<format\> can be one of oneline, short, medium, full, fuller, email, raw and format:\<string\>.
 
 默认的 medium 格式样式如下：
 ```
@@ -278,7 +278,7 @@ Subject: [PATCH] hello release
 使用 `git log --committer=<pattern>` 命令来查看某个提交者的提交历史。  
 查看 man git-log 对这两个选项的说明如下：
 > **--author=\<pattern\>, --committer=\<pattern\>**  
-    Limit the commits output to ones with author/committer header lines that match the specified pattern (regular expression). With more than one --author=\<pattern\>, commits whose author matches any of the given patterns are chosen (similarly for multiple --committer=\<pattern\>).
+Limit the commits output to ones with author/committer header lines that match the specified pattern (regular expression). With more than one --author=\<pattern\>, commits whose author matches any of the given patterns are chosen (similarly for multiple --committer=\<pattern\>).
 
 即，所给的 pattern 参数可以用正则表达式来匹配特定模式。举例如下：  
 使用 `git log --author=John` 查看 John 的上库信息，如果有多个人名都带有 John，会匹配到多个人的提交历史。  
@@ -288,7 +288,7 @@ Subject: [PATCH] hello release
 ## 查找特定的commit信息
 使用 `git log --grep=<pattern>` 命令在commit信息中查找指定的内容。查看 man git-log 对 --grep 的说明如下：
 > **--grep=\<pattern\>**  
-    Limit the commits output to ones with log message that matches the specified pattern (regular expression). With more than one --grep=\<pattern\>, commits whose message matches any of the given patterns are chosen (but see --all-match).
+Limit the commits output to ones with log message that matches the specified pattern (regular expression). With more than one --grep=\<pattern\>, commits whose message matches any of the given patterns are chosen (but see --all-match).
 
 这里说的commit信息指的是在执行 git commit 命令时填写的信息，不包含文件改动的内容。  
 例如，为了方便标识提交的修改对应哪个模块，要求在commit信息里面写上模块名，假设应用UI代码的模块名是APPLICATION_UI，就可以使用 `git log --grep=APPLICATION_UI` 来过滤出所有 APPLICATION_UI 模块的提交历史。
@@ -336,7 +336,7 @@ Commands that output paths (e.g. ls-files, diff), will quote "unusual" character
 
 此时，如果想强制用本地git log的commit信息覆盖服务器的git log，可以使用 `git push -f` 命令。查看 man git-push 对 -f 选项说明如下：
 > **-f, --force**  
-    Usually, the command refuses to update a remote ref that is not an ancestor of the local ref used to overwrite it.  
+Usually, the command refuses to update a remote ref that is not an ancestor of the local ref used to overwrite it.  
     This flag disables these checks, and can cause the remote repository to lose commits; use it with care.
 
 # 删除远端服务器分支
@@ -347,7 +347,7 @@ Commands that output paths (e.g. ls-files, diff), will quote "unusual" character
 - `git push origin --delete <branchName>`
 > 这个命令本质上跟 `git push origin :<branchName>` 是一样的。查看 man git-push 对 --delete 选项说明如下：  
 > **-d --delete**  
-    All listed refs are deleted from the remote repository. This is the same as prefixing all refs with a colon.  
+All listed refs are deleted from the remote repository. This is the same as prefixing all refs with a colon.  
 > 即，--delete 选项相当于推送本地空分支到远端分支。
 
 # 设置git命令别名
@@ -386,7 +386,7 @@ $ git pull --no-tags origin master
 
 在执行 git add 命令之前，如果想查看文件mode属性是否发生改变，可以使用 git diff 命令的 --summary 选项。查看 man git-diff 对 --summary 选项的说明如下：
 > **--summary**  
-    Output a condensed summary of extended header information such as creations, renames and mode changes.
+Output a condensed summary of extended header information such as creations, renames and mode changes.
 
 例如，如果本地文件的mode改变了，执行 `git diff --summary` 命令，会看到类似下面的信息：
 > mode change 100755 => 100644 file_name
@@ -399,46 +399,48 @@ $ git pull --no-tags origin master
 在公司的Android代码目录里面，使用 `git pull` 命令，发现不会打印发生改变的文件信息。例如不会打印类似下面的信息：
 ```bash
 Fast-forward
- res/values-zh-rCN/strings.xml                                         | 5 +++--
- res/values/strings.xml                                                | 4 ++--
- src/com/android/settings/deviceinfo/SoftwarePreferenceController.java | 2 +-
+ res/values-zh-rCN/strings.xml                     | 5 +++--
+ res/values/strings.xml                            | 4 ++--
+ src/com/android/SoftwarePreferenceController.java | 2 +-
  3 files changed, 6 insertions(+), 5 deletions(-)
 ```
-但是之前公司的 git pull 命令会打印改动的文件信息，需要确认出现这种差异的原因。
+但是之前公司的 git pull 命令会打印改动的文件信息，现在想要确认出现这种差异的原因。
 
-经过确认，这是因为 git pull 执行的是 git rebase 所引起。  
+经过排查，这是因为 git pull 执行的是 git rebase 所引起。  
 在git仓库目录下执行 `git config -l` 命令，看到有如下配置：
 > pull.rebase=true
 
-这是当前代码目录的git仓库里面自行配置的。使用 `git config --global -l` 查看没有这个配置.
+这是当前代码目录的git仓库里面自行配置的。使用 `git config --global -l` 查看没有这个全局配置.
 
 查看 man git-config 命令的说明，*pull.rebase=true* 表示 git pull 使用 git rebase，而不是使用 git merge：
 > **pull.rebase**  
-    When true, rebase branches on top of the fetched branch, instead of merging the default branch from the default remote when "git pull" is run.
+When true, rebase branches on top of the fetched branch, instead of merging the default branch from the default remote when "git pull" is run.
 
 再查看 man git-rebase 命令的说明：
 > **rebase.stat**  
-    Whether to show a diffstat of what changed upstream since the last rebase. False by default.  
+Whether to show a diffstat of what changed upstream since the last rebase. False by default.
 
 > **--stat**  
-    Show a diffstat of what changed upstream since the last rebase. The diffstat is also controlled by the configuration option rebase.stat.  
+Show a diffstat of what changed upstream since the last rebase. The diffstat is also controlled by the configuration option rebase.stat.
 
 > **-n, --no-stat**  
-    Do not show a diffstat as part of the rebase process.
+Do not show a diffstat as part of the rebase process.
 
-即，git rebase 默认不会打印发生变动的文件名。如果想要打印，需要添加 --stat 选项。
+即，git rebase 默认不会打印发生变动的文件名。如果想要打印，需要添加 `--stat` 选项。
 
 作为对比，git merge 命令默认会打印修改前后的文件名。下面是 man git-merge 命令的说明：
 > **--stat, -n, --no-stat**  
-    Show a diffstat at the end of the merge. The diffstat is also controlled by the configuration option merge.stat.  
-    With -n or --no-stat do not show a diffstat at the end of the merge.  
+Show a diffstat at the end of the merge. The diffstat is also controlled by the configuration option merge.stat.  
+With -n or --no-stat do not show a diffstat at the end of the merge.  
 
 > **merge.stat**  
-    Whether to print the diffstat between ORIG_HEAD and the merge result at the end of the merge. True by default.
+Whether to print the diffstat between ORIG_HEAD and the merge result at the end of the merge. True by default.
 
 总的来说，git pull 命令其实是先使用 git fetch 获取远端代码，然后调用 git merge 把获取到的远端代码合并到本地分支。如果提供了 --rebase 选项，会用 git rebase 来替代 git merge。配置 pull.rebase 为true，git pull 默认会用 git rebase。  
-当使用 git merge 时，默认会打印变动的文件信息。  
-而使用 git rebase 时，默认不会打印变动的文件信息。
+当 git pull 使用 git merge 时，默认会打印变动的文件信息。  
+而 git pull 使用 git rebase 时，默认不会打印变动的文件信息。
+
+如果不确定使用的是 git merge、还是 git rebase，又想要每次执行 git pull 都能打印变动的文件信息，可以加上 `--stat` 选项，例如 `git pull --stat`。
 
 # git pull的多次测试方法
 执行 git pull 后，本地仓库已经跟远端服务器保存一致，如果想要多次测试 git pull 的效果，需要先让本地仓库代码落后于远端服务器代码。具体方法说明如下。
@@ -502,12 +504,12 @@ curent_branch_xxx
 ## git symbolic-ref --short HEAD
 使用 man git-symbolic-ref 查看该命令的帮助信息，说明如下：
 > **git symbolic-ref: Read, modify and delete symbolic refs**  
-  **git symbolic-ref [-m \<reason\>] \<name\> \<ref\>**  
-  **git symbolic-ref [-q] [--short] \<name\>**  
-    Given one argument, reads which branch head the given symbolic ref refers to and outputs its path, relative to the .git/ directory. Typically you would give HEAD as the \<name\> argument to see which branch your working tree is on.
+**git symbolic-ref [-m \<reason\>] \<name\> \<ref\>**  
+**git symbolic-ref [-q] [--short] \<name\>**  
+Given one argument, reads which branch head the given symbolic ref refers to and outputs its path, relative to the .git/ directory. Typically you would give HEAD as the \<name\> argument to see which branch your working tree is on.
 
 > --short  
-    When showing the value of <name> as a symbolic ref, try to shorten the value, e.g. from refs/heads/master to master.
+When showing the value of <name> as a symbolic ref, try to shorten the value, e.g. from refs/heads/master to master.
 
 即，git symbolic-ref 命令可以查看 symbolic ref 的信息。而 HEAD 就是一个 symbolic ref 的名称，可用于查看当前工作分支。
 
@@ -543,9 +545,9 @@ $ git branch
 ## git rev-parse --abbrev-ref HEAD
 `git rev-parse --abbrev-ref HEAD` 命令也能获取当前分支名。查看 man git-rev-parse 的说明如下：
 > **git rev-parse: Pick out and massage parameters**  
-  **git rev-parse [ --option ] \<args\>...**  
-  **--abbrev-ref[=(strict|loose)]**  
-    A non-ambiguous short name of the objects name.
+**git rev-parse [ --option ] \<args\>...**  
+**--abbrev-ref[=(strict|loose)]**  
+A non-ambiguous short name of the objects name.
 
 在man手册里面没有具体说明这个命令的表现是什么。在git的在线参考链接上找到一些描述: <https://git-scm.com/book/en/v2/Git-Tools-Revision-Selection>
 > If you want to see which specific SHA-1 a branch points to, or if you want to see what any of these examples boils down to in terms of SHA-1s, you can use a Git plumbing tool called rev-parse; basically, rev-parse exists for lower-level operations and isn’t designed to be used in day-to-day operations.
@@ -603,7 +605,7 @@ fatal: No upstream configured for branch 'great'
 **注意**：`@{upstream}` 这一整串本身是命令的一部分，直接输入即可，不是要把 upstream 或者 
 {upstream} 替换成远端服务器仓库名。查看 man git-rev-parse 有如下说明：
 > **\<branchname\>@{upstream}, e.g. master@{upstream}, @{u}**  
-    The suffix @{upstream} to a branchname (short form <branchname>@{u}) refers to the branch that the branch specified by branchname is set to build on top of. A missing branchname defaults to the current one.
+The suffix @{upstream} to a branchname (short form <branchname>@{u}) refers to the branch that the branch specified by branchname is set to build on top of. A missing branchname defaults to the current one.
 
 即，`@{upstream}` 可以缩写为 `@{u}`。如果不提供分支名，默认用当前本地分支名。  
 另外，如果不加 --abbrev-ref 选项，会打印分支head的hash值，而不是打印分支名。
