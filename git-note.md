@@ -331,31 +331,56 @@ Commands that output paths (e.g. ls-files, diff), will quote "unusual" character
 在一些终端上还要检查它自身的语言设置，看终端是否可以正常显示中文。
 
 # 强制覆盖服务器的git log信息
-当我们使用 git reset 命令回退本地 git log 显示的commit信息后，使用 `git push` 提交改动到远端服务器会报错，打印类似下面的错误信息：
+当我们使用 git reset 命令回退本地 git log 显示的 commit 信息后，使用 `git push` 提交改动到远端服务器会报错，打印类似下面的错误信息：
 > 提示：更新被拒绝，因为您当前分支的最新提交落后于其对应的远程分支。
 
-此时，如果想强制用本地git log的commit信息覆盖服务器的git log，可以使用 `git push -f` 命令。查看 man git-push 对 -f 选项说明如下：
+此时，如果想强制用本地 git log 的 commit 信息覆盖服务器的 git log，可以使用 `git push -f` 命令来推送代码到服务器。查看 man git-push 对 -f 选项说明如下：
 > **-f, --force**  
 Usually, the command refuses to update a remote ref that is not an ancestor of the local ref used to overwrite it.  
-    This flag disables these checks, and can cause the remote repository to lose commits; use it with care.
+This flag disables these checks, and can cause the remote repository to lose commits; use it with care.
 
-# 删除远端服务器分支
-可以使用下面两个命令来删除远端服务器上的分支：
-- `git push origin :<branchName>`
-> 在冒号":"前面是要推送的本地分支名，这里没有提供，相当于推送一个本地空分支。在冒号":"后面推送到服务器的远端分支名。  
-这个命令推送一个空分支到远端分支，相当于远端分支被置为空，从而删除 branchName 指定的远端分支
-- `git push origin --delete <branchName>`
-> 这个命令本质上跟 `git push origin :<branchName>` 是一样的。查看 man git-push 对 --delete 选项说明如下：  
+即，-f 选项可以用本地的 git log 信息强制覆盖服务器的 git log 信息。由于这会导致部分提交log信息丢失，请小心使用，确认这样做的必要性。
+
+# Git删除远端服务器分支的方法
+在 git 中，可以使用下面两个命令来删除远端服务器上的分支。
+
+## git push origin :\<branchName\>
+在 `git push origin :<branchName>` 命令中，冒号 ":" 前面的参数是要推送的本地分支名，这里没有提供，相当于推送一个本地空分支。冒号 ":" 后面的参数是要推送到服务器的远端分支名。
+
+这个命令推送一个空分支到远端分支，相当于远端分支被置为空，从而删除 branchName 指定的远端分支。
+
+## git push origin --delete \<branchName\>
+`git push origin --delete <branchName>` 命令本质上跟 `git push origin :<branchName>` 是一样的。查看 man git-push 对 --delete 选项说明如下：
 > **-d --delete**  
 All listed refs are deleted from the remote repository. This is the same as prefixing all refs with a colon.  
-> 即，--delete 选项相当于推送本地空分支到远端分支。
+
+即，`--delete` 选项相当于推送本地空分支到远端分支。
 
 # 设置git命令别名
-我们可以使用 git config 命令来设置git命令别名，减少输入。例如下面的命令设置 st 为 status 命令的别名：
+在 git 中，可以使用 git config 命令来设置指定命令的别名，后续执行该命令时，就用别名代替，可以减少输入。例如下面的命令设置字母 `l` 为 `log` 命令的别名：
 ```bash
-$ git config --global alias.st status
+$ git config --global alias.l log
 ```
-设置之后，执行 `git st` 相当于执行 `git status` 命令。
+设置之后，执行 `git l` 相当于执行 `git log` 命令。
+
+使用别名时，可以在别名后面正常提供参数。例如，上面设置字母 `l` 为 `log` 命令的别名，那么 `git l -p` 相当于 `git log -p`。
+
+查看 man git-config 的 `alias.*` 说明如下：
+> **alias.\***  
+Command aliases for the git command wrapper - e.g. after defining alias.last = cat-file commit HEAD, the invocation git last is equivalent to git cat-file commit HEAD.
+
+设置 `l` 命令别名后，如果要删除这个命令别名，可以执行下面的命令：
+```bash
+$ git config --global --unset alias.l
+```
+由于使用 git config 设置命令别名时指定了 `--global` 选项，在删除别名时也要加上 `--global` 选项。
+
+其他命令别名也可以类似删除，把 *alias.l* 替换成对应的别名即可。
+
+如果想删除所有命令别名，可以执行下面的命令：
+```bash
+$ git config --global --remove-section alias
+```
 
 在Linux系统上，如果有多个命令都需要设置别名，可以直接编辑home目录的下 `.gitconfig` 文件，手动添加如下设置项：
 ```
@@ -363,23 +388,33 @@ $ git config --global alias.st status
     co = checkout
     ci = commit
     st = status
-    l = log --stat
+    lt = log --stat
+    ln = log --name-status
     b = branch
+    pl = pull
+    ph = push
 ```
 可以看到，不但可以为命令设置别名，还可以在命令后面加上选项。
+实际上，用 git config 命令设置别名，就是添加别名项到 `.gitconfig` 文件。
+
+`git config --global --remove-section alias` 命令会删除 `.gitconfig` 文件中的 `[alias]` 小节、以及该小节底下的内容，从而删除所有命令别名。
 
 # 在git pull时只拉取当前branch的信息
-执行 `git pull`命令默认会拉取远端服务器上的改动、以及各个branch和tag的信息。当远端服务器上有新增的branch或tag，就会拉取到，并打印出来，有时候会打印很多这些信息。
+执行 `git pull` 命令默认会拉取远端服务器上的改动、以及各个 branch 和 tag 的信息。当远端服务器上有新增的 branch 或 tag，就会拉取到，并打印出来，有时候会打印很多这些信息。
 
-如果想要只拉取当前branch的信息，需要加上远端仓库名和branch名作为参数。例如，将远端origin仓库的master分支合并到本地当前branch，可以执行下面的命令：
+**如果想要只拉取当前 branch 的信息，需要加上远端服务器的仓库名和分支名作为参数**。例如，将远端服务器 origin 仓库的 master 分支合并到本地当前 branch，可以执行下面的命令：
 ```bash
 $ git pull origin master
 ```
-如果还要不拉取tag信息，可以再加上 --no-tags 选项：
+**注意**：这里的分支名是要拉取的远端服务器分支名，不是本地的分支名。
+
+如果还要不拉取 tag 信息，可以再加上 `--no-tags` 选项：
 ```bash
 $ git pull --no-tags origin master
 ```
-使用这种方法更新代码，即使远端服务器上有新增的branch，在本地执行 `git branch -r` 命令也不会看到新增的branch。
+使用这种方法更新代码，即使远端服务器上有新增的 branch，在本地执行 `git branch -r` 命令也不会看到新增的 branch。
+
+在 bash 上输入时，可以使用 Tab 键来自动补全远端服务器仓库名，输入远端服务器仓库名后，再继续使用 Tab 键来提示要拉取的远端服务器分支名。
 
 # 查看文件mode属性是否发生改变
 当修改文件时，特别是在Windows下修改Linux的文件，可能会改变文件的mode属性值，例如从 644 变成 755，然后使用 git add 命令添加文件，会提示 *file mode change*，但是这个提示不太明显，容易被忽略。
@@ -465,24 +500,24 @@ Whether to print the diffstat between ORIG_HEAD and the merge result at the end 
 如果 git pull 用的是 git rebase，不会提示 branch merge，不需要填写或手动确认 merge comment.
 
 # git pull 命令的选项顺序问题
-实际使用 git pull 的时候，遇到这样一个问题，当把 --stat 写在 --no-tags 后面执行会报错：
+实际使用 git pull 的时候，遇到这样一个问题，当把 --stat 选项写在 --no-tags 选项后面执行会报错：
 ```bash
 $ git pull --no-tags --stat aosp remote_branch_name
 error: unknown option `stat'
 ```
-但是把 --stat 和 --no-tags 的顺序调换，执行 git pull 命令不会报错：
+但是把 --stat 选项和 --no-tags 选项的顺序调换，再执行 git pull 命令就不会报错：
 ```bash
 $ git pull --stat --no-tags aosp remote_branch_name
 From platform/packages/apps/Settings
  * branch            remote_branch_name -> FETCH_HEAD
 Current branch remote_branch_name is up to date.
 ```
-即，--stat 必须写在 --no-tags 前面，否则 git pull 就会报错。查看 man git-pull 的帮助说明，对此说明如下：
+即，--stat 选项必须写在 --no-tags 选项前面，否则 git pull 就会报错。查看 man git-pull 的帮助说明，对此说明如下：
 > More precisely, git pull runs git fetch with the given parameters and calls git merge to merge the retrieved branch heads into the current branch. With --rebase, it runs git rebase instead of git merge.
 
 > Options meant for git pull itself and the underlying git merge must be given before the options meant for git fetch.
 
-而 --stat 是 merge/rebase 的选项，--no-tags 是 fetch 的选项。基于上面说明，merge选项必须写在fetch选项前面。所以当 --stat 写在 --no-tags 后面时，git pull 会报错，它应该是把 --stat 传给 git fetch 处理，但是 git fetch 没有这个选项，导致报错提示 "unknown option".
+而 --stat 是 git merge/git rebase 的选项，--no-tags 是 git fetch 的选项。基于上面说明，merge选项必须写在fetch选项前面。所以当 --stat 选项写在 --no-tags 选项后面时，git pull 会报错，它应该是把 --stat 选项传给 git fetch 命令处理，但是 git fetch 命令没有这个选项，导致报错提示 "unknown option"。
 
 # 打印且只打印本地分支名
 使用 git branch 查看分支，会打印仓库下的所有分支名，通过 '*' 星号来标识当前分支。  
