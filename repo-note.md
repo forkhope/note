@@ -1,29 +1,53 @@
 # 记录 repo 的使用笔记
 
-# 执行 repo forall -c 命令时打印project名称
-当使用 repo forall -c 命令在所有project上执行git命令时，默认不会打印出每个project名称。例如使用 `repo forall -c git status` 命令来查看各个project的改动时，打印出来的内容没有包含仓库的名字，有时候根本看不出来某些改动发生在哪个仓库下。
+# 在Android源码中执行repo forall -c时列出git仓库名称
+Android 源码使用 repo 命令来管理所有 git 仓库，当使用 repo forall -c 命令在所有 git 仓库上执行指定的 git 命令时，默认不会列出每个git 仓库的 project 名称。
 
-如果想要打印project名称，可以使用 repo forall 的 -p 选项。查看 repo help forall 命令打印的帮助信息，对 -p 选项说明如下：
-> **-p**                  Show project headers before output
+**例如使用 repo forall -c git status 命令来查看各个 git 仓库的改动时，打印出来的内容没有包含仓库的路径名，有时候根本看不出来某些改动发生在哪个仓库下**。
 
-根据帮助信息里面的例子，建议先写 -p，再写 -c，即 `repo forall -p -c`。
+**如果想要打印出 git 仓库的名称，可以使用 repo forall 的 -p 选项**。查看 repo help forall 命令打印的帮助信息，对 -p 选项说明如下：
+> **-p**  
+Show project headers before output
+
+根据帮助信息里面的例子，建议先写 -p，再写 -c，即 `repo forall -p -c`，执行该命令，会打印类似下面的信息：
+```bash
+$ repo forall -p -c git pull
+project buildroot/
+Already up-to-date.
+project tools/
+Already up-to-date.
+```
+可以看到，它先打印 git仓库信息 “project buildroot/”，再打印该仓库的状态。
+
+如果不加 -p 选项， 执行 repo forall -c git pull 命令，只会打印下面的信息：
+```bash
+$ repo forall -c git pull
+Already up-to-date.
+Already up-to-date.
+```
+可以看到，只提示 “Already up-to-date.”，没有说明是哪个仓库，如果某个仓库更新代码，比较难知道是哪个仓库更新了代码。相比之下，加了 -p 选项的打印了 git 仓库信息，比较直观。
 
 **注意**：实际使用中遇到了使用 -p 选项没有打印一些报错信息的例子，具体描述如下，下面在 `#` 后面的内容是注释说明，不是命令内容的一部分。
 ```bash
-$ ls       # 下面的 brandy 目录是后来新增的,原先的repo没有跟踪这个仓库
-brandy    buildroot    tools
-$ repo forall -c git pull  # 执行该命令,会看到报错信息,提示有个仓库没有指定
-fatal: No remote repository specified.  Please, specify either a URL or a
+$ ls # 下面的 brandy 目录是后来新增的,原先的repo没有跟踪这个仓库
+brandy buildroot tools
+$ repo forall -c git pull # 执行该命令,会看到报错信息,提示有个仓库没有指定
+fatal: No remote repository specified. Please, specify either a URL or a
 remote name from which new revisions should be fetched.
 Already up-to-date.
 Already up-to-date.
 Already up-to-date.
-$ repo forall -p -c git pull    # 加了 -p 选项后,没有看到上面的报错信息,应
-project buildroot/              # 应该是被过滤掉了.可见,使用 -p 选项可能会
-Already up-to-date.             # 漏掉某些报错信息.但不加 -p 又打印不出具体
-project tools/                  # 的仓库名字.所以要根据实际情况来选择是否使
-Already up-to-date.             # 用 -p 选项.
+$ repo forall -p -c git pull
+project buildroot/
+Already up-to-date.
+project tools/
+Already up-to-date.
 ```
+上面的 `repo forall -p -c git pull`  命令，加了 -p 选项，没有看到打印 “fatal: No remote repository specified” 的报错信息，应该是被过滤掉了。
+
+可见，使用 -p 选项可能会漏掉某些报错信息。但不加 -p 又打印不出具体的仓库名字。所以要根据实际情况来选择是否使用 -p 选项。
+
+如果仓库 project 不经常发生变动，可以使用 -p 选项。确认新增仓库 project 时，先不加 -p 选项，更新代码，下载好新的 project 后，就可以继续使用 -p 选项。
 
 # repo status 指定多线程数目
  "repo status"的 "-j" 选项
@@ -192,8 +216,7 @@ error: pathspec '.' did not match any file(s) known to git.
 在实际项目开发时，可能会在本地创建开发分支，这个分支没有关连到服务器分支。我们同步远端服务器代码，可能只是想获取到最新代码。此时，并不想丢弃本地开发分支的改动。但是上面的 `repo forall -c 'git reset --hard'` 命令无法区分这种情况，会丢弃开发分支的改动。
 
 下面这个看起来很复杂的命令就用于解决这个问题，它先判断当前本地分支在远端服务器存在同名分支时，才强制覆盖本地修改并pull服务器代码：
-> repo forall -c "branch_name=$(git rev-parse --abbrev-ref HEAD) && \
-  git rev-parse --abbrev-ref ${branch_name}@{upstream} && git reset --hard && git pull --stat --no-tags" |& cat
+> repo forall -c "branch_name=$(git rev-parse --abbrev-ref HEAD) && git rev-parse --abbrev-ref ${branch_name}@{upstream} && git reset --hard && git pull --stat --no-tags" |& cat
 
 对这个命令的各个部分说明如下。
 - `repo forall -c`：对所有git仓库都执行后面的跟着的命令，这里使用双引号把多个git命令都括起来，作为一个整体传给repo，可以做一些复杂的操作。
