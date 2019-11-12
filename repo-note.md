@@ -94,19 +94,19 @@ branch local_branch
 下面具体举例说明 `repo sync` 后本地分支的变化，在这个例子一开始，本地当前分支名是 *branch_m*，这不是 `repo init -b` 所指定的分支。
 
 1. 使用 git branch 命令，打印出当前分支名是 branch_m：
-```git
+```bash
 $ git branch
   other_branch_xxx
 * branch_m
 ```
 2. 在当前代码目录下执行 repo sync 命令：
-```git
+```bash
 $ repo sync .
 Fetching project platform/packages/apps/Settings
 packages/apps/Settings/: leaving branch_m; does not track upstream
 ```
 3. 再次执行 git branch 命令，会看到当前处于没有命名的分支下：
-```git
+```bash
 $ git branch
 * (detached from f15a7be)
   other_branch_xxx
@@ -210,13 +210,13 @@ detach projects back to manifest revision
 **注意**：加上 `-d` 选项只表示忽略本地改动，可以强制同步远端服务器的代码，但是本地修改的文件还是保持改动不变，不会强制覆盖掉本地修改。而且同步之后，本地的分支指向会发生变化，不再指向原来的分支。具体举例如下。
 
 1. 下面是执行 `repo sync -d` 之前的分支信息：
-```git
+```bash
 $ git branch
 * curent_branch_xxx
 ```
 
 2. 下面是执行 `repo sync -d` 之后的分支信息：
-```git
+```bash
 $ git branch
 * (detached from 715faf5)
   curent_branch_xxx
@@ -224,7 +224,7 @@ $ git branch
 即，从远端服务器同步的代码，是同步到跟踪远端服务器的分支，还没有从 git 仓库把代码 checkout 到本地，而当前本地修改的代码处在未命名分支下，是不同的分支，互不干扰，才能在不丢弃本地修改的情况下，强制同步远端服务器代码。
 
 3. 执行 `git status` 命令，可以看到本地还是有修改过且还没有 commit 的文件，同步远端服务器代码后，并不会强制覆盖本地文件的修改：
-```git
+```bash
 $ git status
 HEAD detached at 715faf5
 Changes not staged for commit:
