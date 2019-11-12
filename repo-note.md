@@ -50,135 +50,180 @@ Already up-to-date.
 如果仓库 project 不经常发生变动，可以使用 -p 选项。确认新增仓库 project 时，先不加 -p 选项，更新代码，下载好新的 project 后，就可以继续使用 -p 选项。
 
 # repo status 指定多线程数目
- "repo status"的 "-j" 选项
-查看 repo help status 命令的帮助说明，里面提到 -j 选项可以指定执行时的多线程数目：
-> **-j JOBS, --jobs=JOBS**  number of projects to check simultaneously
+在用 repo status 命令查看 Android 源码的所有 git 仓库改动时，一般执行起来都比较慢，像是单线程执行，但实际上默认会启用2个选项来同步执行。
+
+我们可以使用 repo status 的 -j 选项来指定执行时的多线程数目。查看 repo help status 对 -j 选项的帮助说明如下：
+> **-j JOBS, --jobs=JOBS**  
+number of projects to check simultaneously
 
 > Description  
 The -j/--jobs option can be used to run multiple status queries in parallel.
 
-所以，可以使用该选项来加快 repo status 命令的执行速度。例如 `repo status -j 4`。  
-查看 `.repo/repo/subcmds/status.py` 的源码，如果没有提供 -j 选项，默认使用2个线程来执行：
+即，可以使用该选项来加快 repo status 命令的执行速度。例如 `repo status -j 4`。
+
+查看 `.repo/repo/subcmds/status.py` 的源码，如果没有提供 -j 选项，默认启用2个线程来执行，如下面的 `default=2` 所示：
 ```python
 p.add_option('-j', '--jobs',
              dest='jobs', action='store', type='int', default=2,
              help="number of projects to check simultaneously")
 ```
 
-**注意**：repo status 命令多线程执行时，打印出来的信息概率会出现错乱，类似于下面的效果：
+**注意**：repo status 命令启用多线程执行时，打印出来的信息概率会出现错乱，类似于下面的效果：
 ```
-project test/vts-testcase/vndk/         branch local_branchproject toolchain/binutils/
+project test/vts-testcase/vndk/  branch local_branchproject toolchain/binutils/
 branch local_branch
 ```
-可以看到，上面的 *project toolchain/binutils/* 本该另起一行打印，但是它跟前面的内容打印在了同一行。  
-如果在shell脚本里面对 repo status 命令的打印结果进行过滤，这种情况下就会过滤出错。为了避免这种问题，建议在shell脚本里面用 `repo status -j 1 ` 命令指定为单线程执行，避免打印的信息错乱，方便解析。但是这样执行会比较慢，根据实际需求来取舍。
+可以看到，上面的 *project toolchain/binutils/* 本该另起一行打印，但是它跟前面的内容打印在了同一行。这是多线程同时输出导致的错乱。
 
-# repo sync 时减少同步时间和减小代码空间
-在用 repo sync 命令同步服务器内容时，可以使用 `repo sync -c --no-tags --prune -j 4` 命令来减少同步时间和减小代码空间。查看 repo help status 里面对所给各个选项的说明如下：
-- **-c, --current-branch**  fetch only current branch from server
-> 这个选项指定只获取 repo init 时 -b 选项所指定分支，不会获取远端服务器的分支信息。例如服务器上新增了其他分支，使用 -c 选项同步后，本地执行 `git branch -r` 命令看不到服务器新增的分支名。如果不加 -c 选项，那么同步的时候，会看到 *[new branch]* 这样的信息，使用 `git branch -r` 命令可查看服务器新增的分支。
-- **--no-tags**             don't fetch tags
-> 该选项指定不获取服务器上的tag信息。
-- **--prune**               delete refs that no longer exist on the remote
-> 如果远端服务器已经删除了某个分支，在 repo sync 时加上 --prune 选项，可以让本地仓库删除对这个分支的跟踪引用。查看 repo 的 `.repo/repo/project.py` 源码，这个选项实际上是作为 git fetch 命令的选项来执行。查看 man git-fetch 对自身 --prune 选项的说明如下：  
-> -p, --prune  
-  After fetching, remove any remote-tracking references that no longer exist on the remote.
-- **-j JOBS, --jobs=JOBS**  projects to fetch simultaneously (default 2)
-> 使用多线程来同步，例如上面的 `-j 4` 指定用4个线程来同步。如果没有提供该选项，默认是用2个线程。
+**之前编写 shell 脚本来过滤 repo status 命令的打印结果，想要打印只且打印发生了改动的信息，就遇到了这种输出信息错乱影响解析的情况**。
 
-总的来说，使用 -c 和 --no-tags 选项可以减少需要同步的内容，从而减少同步时间，减小本地的代码空间。  
-使用 -j 选项来使用多线程进行同步，加快执行速度，也就减少了同步时间。  
-使用 --prune 选项去掉已删除分支的跟踪应用，一般不会用到，这个选项可加可不加。
+当时还奇怪没有用 -j 选项来指定启用多线程，为什么会有这个问题，查看 repo help status 的帮助信息，也没有说明默认会启用多线程。后来查看了上面的 repo 源码，才确认默认会启用2个线程来同步执行。
 
-# repo sync 所同步的远端服务器分支
+为了避免这种问题，建议在 shell 脚本里面用 `repo status -j 1` 命令明确指定为单线程执行，避免打印的信息错乱而影响解析。但是这样执行会比较慢，根据实际需求来取舍。
+
+# 介绍 repo sync 同步的是远端服务器哪个分支
 查看 repo help sync 命令的帮助说明，该命令的格式如下：
-> Usage: repo sync [\<project\>...]
+- Usage: repo sync [\<project\>...]
 
-可以看到，它没有提供参数来指定要同步的远端服务器分支。实际上，默认会同步 repo init 时 -b 选项指定的分支。当本地分支名和 repo init 的分支名不同时，执行 repo sync 会改变本地分支指向。举例说明如下。
+可以看到，它没有提供参数来指定要同步的远端服务器分支。那么在执行 repo sync 时，它同步的是远端服务器的哪个分支？
 
-使用 git branch 命令，打印出当前分支名是 branch_m：
+实际上，`repo sync` 默认同步在 `repo init` 时由 -b 选项指定的分支，这也是 repo 所跟踪的分支。
+
+**注意**：如果本地的 git 仓库切换过分支，当前分支名和 `repo init -b` 指定的分支名不一样，那么执行 repo sync 会改变本地分支指向，需要注意到这个分支的变化，避免后续操作错分支。
+
+下面具体举例说明 `repo sync` 后本地分支的变化，在这个例子一开始，本地当前分支名是 *branch_m*，这不是 `repo init -b` 所指定的分支。
+
+1. 使用 git branch 命令，打印出当前分支名是 branch_m：
 ```git
 $ git branch
   other_branch_xxx
 * branch_m
 ```
-在当前代码目录下执行 repo sync 命令：
+2. 在当前代码目录下执行 repo sync 命令：
 ```git
 $ repo sync .
 Fetching project platform/packages/apps/Settings
 packages/apps/Settings/: leaving branch_m; does not track upstream
 ```
-再次执行 git branch 命令，会看到当前处于没有命名的分支下：
+3. 再次执行 git branch 命令，会看到当前处于没有命名的分支下：
 ```git
 $ git branch
 * (detached from f15a7be)
   other_branch_xxx
   branch_m
 ```
-基于这个现象，建议在本地所有分支名跟服务器分支名都相同时，才用 repo sync 来同步代码。避免同步之后，分支指向发生变化，此时修改的代码不是位于原来分支下面，后续如果要提交修改到原来的分支，会提示需要merge，容易造成代码冲突。
 
-# repo sync 指定同步某个仓库project
-执行 `repo sync` 命令默认同步所有git仓库，可以提供一个或多个 project 参数来指定需要同步的git仓库路径。关键是，如何知道某个git仓库的 project 参数值是多少。
+基于这个现象，建议在本地所有分支都关联到远端服务器分支时，才用 `repo sync` 来同步代码。
 
-经过实际测试发现，这里提供的 project 参数值是基于shell当前的工作目录寻址到目标git仓库的目录路径，而不是git仓库在 repo 中保存的完整路径。
+如果本地当前分支没有关联到远端服务器分支，使用 `repo sync` 同步之后，分支指向会发生变化，后续修改代码，并不是位于原来分支下面，如果要提交修改到原来的分支，会提示需要 merge，容易造成代码冲突，比较麻烦。
 
-例如 `repo status` 命令打印了下面的git仓库信息。可以看到，这个git仓库在 repo 中保存的完整路径是 "android/packages/apps/Settings/"。
+# repo sync 时减少同步时间和减小代码空间
+在使用 repo sync 同步 Android 源码时，可以添加一些选项来减少同步时间和要下载的代码空间。具体的命令是 `repo sync -c --no-tags --prune -j 4`。
+
+查看 repo help status 的帮助信息，对所给的各个选项具体说明如下：
+- **-c, --current-branch**  fetch only current branch from server.  
+这个选项指定只获取执行 repo init 时 -b 选项所指定的分支，不会获取远端服务器的分支信息。  
+例如服务器上新增了其他分支，使用 -c 选项同步后，在本地 git 仓库执行 `git branch -r` 命令看不到服务器新增的分支名。如果不加 -c 选项，那么同步的时候，会打印 *[new branch]* 这样的信息，使用 `git branch -r` 命令可查看到服务器新增的分支。
+- **--no-tags**             don't fetch tags.  
+该选项指定不获取服务器上的tag信息。
+- **--prune**               delete refs that no longer exist on the remote.  
+如果远端服务器已经删除了某个分支，在 repo sync 时加上 `--prune` 选项，可以让本地仓库删除对这个分支的跟踪引用。  
+查看 repo 的 `.repo/repo/project.py` 源码，这个选项实际上是作为 git fetch 命令的选项来执行。查看 man git-fetch 对自身 `--prune` 选项的说明如下，可供参考：  
+> -p, --prune  
+  After fetching, remove any remote-tracking references that no longer exist on the remote.
+- **-j JOBS, --jobs=JOBS**  projects to fetch simultaneously (default 2).  
+指定启用多少个线程来同步。  
+例如上面的 `-j 4` 指定用4个线程来同步。如果没有提供该选项，默认是用2个线程。
+
+总的来说，在 `repo sync -c --no-tags --prune -j 4` 命令中，使用 -c 和 --no-tags 选项可以减少需要同步的内容，从而减少要占用的本地代码空间，也可以减少一些同步时间。
+
+使用 -j 选项来指定启用多线程进行同步，可以加快执行速度，也就减少了同步时间。  
+
+使用 --prune 选项去掉已删除分支的跟踪引用，一般不会用到，这个选项可加可不加。
+
+# 详解 repo sync 如何指定只同步Android源码的某个仓库
+执行 `repo sync` 命令默认会同步 Android 源码的所有 git 仓库。如果想要单独同步一个、或多个 git 仓库，可以提供一个、或多个 project 参数来指定要同步的 git 仓库路径。具体命令格式如下：
+- Usage: repo sync [\<project\>...]
+
+关键是，如何知道某个 git 仓库对应的 project 参数值是什么，是 git 仓库所在的子目录名，还是 git 仓库在 repo 中保存的完整目录路径，或是其他？ 
+
+经过实际测试发现，这里提供的 project 参数值是基于当前 shell 的工作目录寻址到目标 git 仓库的目录路径，而不是 git 仓库在 repo 中保存的完整目录路径，也不是 git 仓库的子目录名。
+
+例如执行 `repo status` 命令打印了下面的 git 仓库信息：
 ```
 project android/packages/apps/Settings/ branch branch_m
  -m     res/values-zh-rCN/strings.xml
 ```
-然后在 "android/" 目录下执行 `repo sync -d android/packages/apps/Settings/` 命令会报错：
+可以看到，这个 git 仓库在 repo 中保存的完整路径是 *android/packages/apps/Settings/*，所在的子目录名是 *Settings*。
+
+我们使用 `cd` 命令进入到 *android* 子目录，测试如下。
+
+1. 在当前的 *android* 子目录下执行 `repo sync android/packages/apps/Settings/` 命令，会执行报错：
 ```bash
-$ repo sync -d android/packages/apps/Settings/
+$ repo sync android/packages/apps/Settings/
 error: project android/packages/apps/Settings/ not found
 ```
-即，执行命令时，shell的工作目录在 *android* 目录下，然后传入git仓库在 repo 中的完整目录路径 "android/packages/apps/Settings/"，repo sync 命令执行会报错。
+即，当前 shell 的工作目录在 *android* 子目录下，把要同步的 git 仓库在 repo 中的完整目录路径 *android/packages/apps/Settings/* 作为参数传给 repo sync 命令，会执行报错，基于这个路径不能定位到要同步的 git 仓库。
 
-而传入 "packages/apps/Settings/" 这个路径就可以正常执行：
+2. 传入 *packages/apps/Settings/* 这个路径可以正常执行：
 ```bash
-$ repo sync -d packages/apps/Settings/
+$ repo sync packages/apps/Settings/
 Fetching project platform/packages/apps/Settings/
 ```
-如果本身已经在 "android/packages/apps/Settings/" 目录下面。直接执行 `repo sync .` 命令即可：
+基于当前所在的 *android* 子目录，可以正常定位到所给 *packages/apps/Settings/* 路径下的 git 仓库。
+
+3. 使用 `cd` 命令进入到 *android/packages/apps/Settings/* 目录下，然后执行 `repo sync .` 命令不会报错：
 ```bash
 $ repo sync .
 Fetching project platform/packages/apps/Settings/
 ```
-总的来说，repo sync 后面跟着的 project 参数值应该是基于当前shell工作目录能够寻址到该project的目录路径，类似于cd命令的寻址方式。
 
-查看 repo help sync 对 project 参数的说明如下，符合上面的验证结果：
+基于这几个测试结果可以发现，repo sync 后面跟着的 project 参数值应该是基于当前 shell 工作目录能够寻址到该 git 仓库的目录路径，类似于 cd 命令的路径寻址方式。
+
+查看 repo help sync 命令打印的帮助信息，对 project 参数的说明如下，符合上面的验证结果：
 > 'repo sync' will synchronize all projects listed at the command line. Projects can be specified either by name, or by a relative or absolute path to the project's local directory. If no projects are specified, 'repo sync' will synchronize all projects listed in the manifest.
 
-基于这个说明，可以提供 project name、project本地目录的相对路径或绝对路径来指定要同步的project。
+即，可以提供 project name、或者提供能够寻址到该 project 本地目录的相对路径或绝对路径来指定要同步的 project。
 
-这里说的 project name 可以在 repo 生成的 .repo/ 目录下查看。例如，查看这个目录下的 manifest.xml 文件，有如下信息:
+这里说的 project name 并不是 git 仓库的子目录名，具体值要在 repo 命令生成的 `.repo/` 目录下查看。例如，查看 `.repo/` 目录下的 manifest.xml 文件，有如下信息:
 ```xml
 <project groups="p-fs-release,pdk-fs" name="platform/packages/apps/Settings"
     path="android/packages/apps/Settings"  />
 ```
-可以看到 Settings project 的 name 是 *platform/packages/apps/Settings*。那么不管在哪个目录下，执行 `repo sync platform/packages/apps/Settings` 命令都会同步 Settings 目录的代码。
+
+可以看到，*Settings* 子目录的 git 仓库在 repo 中保存的完整路径是 *android/packages/apps/Settings*，跟上面例子打印的信息相符。而它的 name 是 *platform/packages/apps/Settings*。
+
+那么只要当前 shell 的工作目录是 Android 源码的子目录，不管在哪个子目录下，执行 `repo sync platform/packages/apps/Settings` 命令都会同步 Settings 这个 git 仓库的代码，这里不再举例，可以自行验证。
 
 # repo sync 的 -d 选项说明
-使用 repo sync 来同步代码时，如果本地修改了代码还没有commit，会提示无法sync：
+使用 `repo sync` 命令来同步远端服务器的 Android 代码，如果本地修改了代码但还没有 commit，会提示无法 sync：
 > error: android/frameworks/base/: contains uncommitted changes
 
-如果想要强制同步远端服务器代码，可以加上 -d 选项，`repo sync -d` 会将 HEAD 强制指向 repo manifest的库，而忽略本地的改动。查看 repo help sync 对 -d 选项的说明如下：
-> **-d, --detach**          detach projects back to manifest revision
+此时，可以使用 `git reset` 命令丢弃本地修改，然后再执行 `repo sync` 来同步代码。
 
-注意：加上 -d 选项只表示忽略本地改动，可以强制同步服务器代码，但是本地改动的文件还是保持改动不变，不会强制覆盖掉本地修改。而且执行之后，本地的分支指向会发生变化，不再指向原来的分支。具体举例如下。
+如果想要不丢失本地修改，强制同步远端服务器代码，可以加上 `-d` 选项，`repo sync -d` 命令会将 HEAD 强制指向 repo manifest 版本，而忽略本地的改动。
 
-下面是执行 repo sync -d 之前的分支信息：
+查看 repo help sync 的帮助信息，对 -d 选项的说明如下：
+> **-d, --detach**  
+detach projects back to manifest revision
+
+**注意**：加上 `-d` 选项只表示忽略本地改动，可以强制同步远端服务器的代码，但是本地修改的文件还是保持改动不变，不会强制覆盖掉本地修改。而且同步之后，本地的分支指向会发生变化，不再指向原来的分支。具体举例如下。
+
+1. 下面是执行 `repo sync -d` 之前的分支信息：
 ```git
 $ git branch
 * curent_branch_xxx
 ```
-下面是执行 repo sync -d 之后的分支信息：
+
+2. 下面是执行 `repo sync -d` 之后的分支信息：
 ```git
 $ git branch
 * (detached from 715faf5)
   curent_branch_xxx
 ```
-用 git status 查看，可以看到本地还是有修改过且还没有commit的文件，同步服务器代码后，并不会强制覆盖本地文件为服务器的代码：
+即，从远端服务器同步的代码，是同步到跟踪远端服务器的分支，还没有从 git 仓库把代码 checkout 到本地，而当前本地修改的代码处在未命名分支下，是不同的分支，互不干扰，才能在不丢弃本地修改的情况下，强制同步远端服务器代码。
+
+3. 执行 `git status` 命令，可以看到本地还是有修改过且还没有 commit 的文件，同步远端服务器代码后，并不会强制覆盖本地文件的修改：
 ```git
 $ git status
 HEAD detached at 715faf5
@@ -188,20 +233,21 @@ Changes not staged for commit:
         modified:   vendor/chioverride/default/g_pipelines.h
         modified:   vendor/topology/g_usecase.xml
 ```
-即，如果想要丢弃本地修改、让本地代码跟git仓库代码一致，`repo sync -d` 命令达不到这个效果。
+即，如果想要丢弃本地修改、让本地代码跟同步后的 git 仓库代码一致，`repo sync -d` 命令达不到这个效果。
 
-另外，repo sync 有一个 --force-sync 选项：
+另外，repo sync 有一个 `--force-sync` 选项，具体说明如下：
 > **--force-sync**  
 overwrite an existing git directory if it needs to point to a different object directory. WARNING: this may cause loss of data
 
-从说明来看，像是可以强制同步，可能会丢失本地改动。但是实际测试发现，这个选项并不会强制覆盖本地的改动。如果本地文件被改动，加上这个选项还是会sync报错：
+从说明来看，像是可以强制同步，且可能丢失本地改动。但是实际测试发现，这个选项并不能强制覆盖本地的改动。如果本地文件发生改动，加上这个选项也是会 sync 报错：
 ```bash
 $ repo sync --force-sync .
 Fetching project tools/
 error: tools/: contains uncommitted changes
 ```
-同时提供 -d 和 --force-sync 两个选项，还是不会强制覆盖本地修改。  
-目前没有找到 repo sync 命令可以强制覆盖本地修改的选项.
+同时提供 `-d` 和 `--force-sync` 两个选项，还是不能强制覆盖本地修改。
+
+目前没有找到 `repo sync` 命令可以强制覆盖本地修改的选项。
 
 # 用repo丢弃本地修改，强制同步远端服务器代码
 目前所知，使用 repo sync 同步远端服务器代码，不能强制覆盖本地修改。如果想要强制覆盖本地修改，可以用 repo forall -c 来执行git丢弃本地修改的命令，git checkout 和 git reset 命令都可以丢弃本地修改。
