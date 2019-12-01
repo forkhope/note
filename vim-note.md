@@ -746,6 +746,7 @@ CTRL-O        execute one command, return to Insert mode   *i_CTRL-O*
 
 ## 总结
 用列表形式总结常用的转换大小写命令如下。
+
 | 命令 | 含义 |
 | -- | -- |
 | guw | 如果光标在单词开头，会转换整个单词成小写 |
