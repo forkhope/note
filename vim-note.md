@@ -625,7 +625,7 @@ When 'sts' is negative, the value of 'shiftwidth' is used.
 从写入文件的字符和字节数来说，第一个按 Tab 键，写入 4 个空格，也就是四个字节，第二次按 Tab 键，会删掉之前写入的 4 个空格，再写入一个 tab 字符，只有一个字节，写入文件的字节数变少了。虽然从界面上看，显示了 8 个空白字符，但这只是一个 tab 字符的显示宽度。可以执行下面命令让空格和 tab 字符可见，再进行测试，就能清楚地看到这一点：
 ```vim
 :set list
-:set listchars=tab:>~,space=.
+:set listchars=tab:>~,space:.
 ```
 
 另外，*softtabstop* 选项也会影响 Backspace 键删除连续多个空格和删除 tab 字符的行为。在上面的场景中，第一次按 Tab 键，vim 会插入 4 个空格，此时可以用 Backspace 键一次性删除这 4 个空格。即，只按一次 Backspace 键，就能删除这 4 个空格。
