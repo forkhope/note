@@ -36,3 +36,6 @@ cp /tmp/hmanLSa2jh/bash.html /home/talen/Documents
 4. Shell 脚本中如何回显正在执行的命令
 $ set -v          # 会使得后面执行的命令自动回显。
 $ set +v         # 会关闭命令回显功能。
+
+5. Bash 提示信息设置
+PS1='${debian_chroot:+($debian_chroot)}[\w]\$ '
